@@ -38,15 +38,27 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   File image;
-  Image image2;
+  List<dynamic> dataImg = [
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Flag_of_None_%28square%29.svg/768px-Flag_of_None_%28square%29.svg.png'
+  ];
+  int index = 0;
 
   void _uploadImage() async {
+    // var now = new DateTime.now();
     ImagePicker picker = ImagePicker();
     PickedFile pickedImage = await picker.getImage(source: ImageSource.gallery);
 
     File originalImage = File(pickedImage.path);
 
-    setState(() => image = originalImage);
+    setState(() {
+      image = originalImage;
+      dataImg = [
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Flag_of_None_%28square%29.svg/768px-Flag_of_None_%28square%29.svg.png'
+      ];
+    });
+    // var end = new DateTime.now();
+    // var re = end.difference(now);
+    // print(re);
   }
 
   // Future imageSend() async {
@@ -56,25 +68,27 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future uploadToServer() async {
     if (image == null) return;
-    img.Image image_temp = img.decodeImage(image.readAsBytesSync());
-    img.Image resize_img = img.copyResize(image_temp, width: 700, height: 500);
-    var thumb = img.encodeJpg(resize_img);
+    img.Image imageTemp = img.decodeImage(image.readAsBytesSync());
+    img.Image resizeImg = img.copyResize(imageTemp, width: 800, height: 500);
+    var thumb = img.encodeJpg(resizeImg);
     String base64Image = base64.encode(thumb);
     String fileName = image.path.split("/").last;
 
-    Response response_1 = await Dio()
+    // var now = new DateTime.now();
+
+    Response response = await Dio()
         .post('http://service.mmlab.uit.edu.vn/receipt/task3/send', data: {
-      "image-name": 'test_fluter.jpg',
+      "image-name": fileName,
       "base64": base64Image,
     });
-    // Response response = await Dio()
-    //     .post('http://service.mmlab.uit.edu.vn/receipt/task3/result', data: {
-    //   "image-name": 'test_fluter.jpg',
-    //   "filter-id": 1,
-    // });
+    print(fileName);
+    // var end = new DateTime.now();
+    // var re = end.difference(now);
+    // print(re);
+
     // print(response.statusCode);
     // print(response.data['image-name']);
-    print(response_1.data);
+    // print(response_1.data);
     // print(response.data['base64']);
     // print(response.headers);
     // print(response.request);
@@ -105,6 +119,50 @@ class _MyHomePageState extends State<MyHomePage> {
   //   requestPersmission();
   //   super.initState();
   // }
+  Future getResult() async {
+    String fileName = image.path.split("/").last;
+    print(fileName);
+    var now = new DateTime.now();
+
+    Response response_1 = await Dio()
+        .post('http://service.mmlab.uit.edu.vn/receipt/task3/result', data: {
+      "image-name": fileName,
+      "filter-id": [0, 1, 2],
+    });
+    var jsonData_1 = response_1.data;
+    var jsonFix_1 = jsonData_1.replaceAll("'", '"');
+    var myData_1 = json.decode(jsonFix_1);
+    print(myData_1);
+    dataImg.addAll(myData_1);
+
+    Response response_2 = await Dio()
+        .post('http://service.mmlab.uit.edu.vn/receipt/task3/result', data: {
+      "image-name": fileName,
+      "filter-id": [3, 4, 5],
+    });
+
+    var jsonData_2 = response_2.data;
+    var jsonFix_2 = jsonData_2.replaceAll("'", '"');
+    var myData_2 = json.decode(jsonFix_2);
+    print(myData_2);
+    dataImg.addAll(myData_2);
+
+    Response response_3 = await Dio()
+        .post('http://service.mmlab.uit.edu.vn/receipt/task3/result', data: {
+      "image-name": fileName,
+      "filter-id": [6, 7, 8],
+    });
+
+    var jsonData_3 = response_3.data;
+    var jsonFix_3 = jsonData_3.replaceAll("'", '"');
+    var myData_3 = json.decode(jsonFix_3);
+    print(myData_3);
+    dataImg.addAll(myData_3);
+
+    var end = new DateTime.now();
+    var re = end.difference(now);
+    print(re);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,18 +174,21 @@ class _MyHomePageState extends State<MyHomePage> {
         children: <Widget>[
           Center(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.start,
+              // crossAxisAlignment: CrossAxisAlignment.start,
+              // mainAxisSize: MainAxisSize.max,
+              // mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 Center(
-                    child: image != null
-                        ? Image.file(
-                            image,
-                            width: 411,
-                            height: 500,
-                          )
-                        : null),
+                    child: dataImg.length == 1
+                        ? (image != null
+                            ? Image.file(
+                                image,
+                                // fit: BoxFit.fitWidth,
+                                width: 410,
+                                height: 500,
+                              )
+                            : null)
+                        : Image.network(dataImg[index], width: 410, height: 500,)),
               ],
             ),
           ),
@@ -137,33 +198,45 @@ class _MyHomePageState extends State<MyHomePage> {
               Row(
                 children: <Widget>[
                   const SizedBox(
-                    width: 20,
+                    width: 10,
                   ),
                   RaisedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        index = 1;
+                      });
+                    },
                     child: Text(
-                      'On Click',
-                      style: TextStyle(fontSize: 20),
+                      'gray',
+                      style: TextStyle(fontSize: 15),
                     ),
                   ),
                   const SizedBox(
                     width: 10,
                   ),
                   RaisedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        index = 2;
+                      });
+                    },
                     child: Text(
-                      'On Click 2',
-                      style: TextStyle(fontSize: 20),
+                      'sketch',
+                      style: TextStyle(fontSize: 15),
                     ),
                   ),
                   const SizedBox(
                     width: 10,
                   ),
                   RaisedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        index = 3;
+                      });
+                    },
                     child: Text(
-                      'On Click 3',
-                      style: TextStyle(fontSize: 20),
+                      'buw_pencil',
+                      style: TextStyle(fontSize: 15),
                     ),
                   ),
                 ],
@@ -171,17 +244,119 @@ class _MyHomePageState extends State<MyHomePage> {
               Row(
                 children: <Widget>[
                   const SizedBox(
-                    width: 20,
+                    width: 10,
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      setState(() {
+                        index = 4;
+                      });
+                    },
+                    child: Text(
+                      'water_color',
+                      style: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      setState(() {
+                        index = 5;
+                      });
+                    },
+                    child: Text(
+                      'oil_painting',
+                      style: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      setState(() {
+                        index = 6;
+                      });
+                    },
+                    child: Text(
+                      'cold',
+                      style: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: <Widget>[
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      setState(() {
+                        index = 7;
+                      });
+                    },
+                    child: Text(
+                      'warm',
+                      style: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      setState(() {
+                        index = 8;
+                      });
+                    },
+                    child: Text(
+                      'cartoonizer',
+                      style: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      setState(() {
+                        index = 9;
+                      });
+                    },
+                    child: Text(
+                      'colorization',
+                      style: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: <Widget>[
+                  const SizedBox(
+                    width: 10,
                   ),
                   RaisedButton(
                     onPressed: uploadToServer,
                     child: Text(
                       'Upload',
-                      style: TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  RaisedButton(
+                    onPressed: getResult,
+                    child: Text(
+                      'Get result',
+                      style: TextStyle(fontSize: 15),
                     ),
                   ),
                 ],
-              ),
+              )
             ],
           ),
         ],
